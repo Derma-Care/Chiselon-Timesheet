@@ -7,7 +7,6 @@ import { submitON, submitOFF } from "../../features/submitBtn";
 import { leaveSubmitON, leaveSubmitOFF } from "../../features/empLeaveSubmit";
 import axios from "axios";
 import { serverUrl, supervisorurl } from '../../APIs/Base_UrL'
-import { Button, Modal } from "react-bootstrap";
 
 
 function SupervisorHome() {
@@ -33,9 +32,6 @@ function SupervisorHome() {
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [calendarImage, setCalendarImage] = useState(null);
 
-  // Cancel Leave Modal
-  const [showModal, setShowModal] = useState(false);
-  const [selectedLeaveId, setSelectedLeaveId] = useState(null);
   useEffect(() => {
     async function fetchTimesheetData() {
       if (!supervisorId) {
@@ -127,6 +123,12 @@ function SupervisorHome() {
   console.log(startSubmitDate);
   console.log(endSubmitDate);
   console.log(submitSupervisorId);
+
+
+
+
+
+
   useEffect(() => {
     async function fetchLeaveRequests() {
       if (!supervisorId) {
@@ -160,70 +162,83 @@ function SupervisorHome() {
     fetchLeaveRequests();
   }, [supervisorId]);
 
-  // Open modal with selected leave ID
-  /* ------------------ CANCEL LEAVE ------------------ */
 
-  const handleCancelClick = (id) => {
-    setSelectedLeaveId(id);
-    setShowModal(true);
-  };
-
-  const confirmCancelLeave = async () => {
-    try {
-      await axios.delete(
-        `${serverUrl}/supervisor/leave-requests/${selectedLeaveId}`
-      );
-
-      setLeaveRequests((prev) =>
-        prev.filter((leave) => leave.id !== selectedLeaveId)
-      );
-
-      setShowModal(false);
-    } catch (error) {
-      console.error("Cancel leave failed:", error);
-    }
-  };
   return (
     <>
       <div className="ti-background-clr">
         <div className="ti-home-container">
-
-          {/* LEFT NAVIGATION SIDEBAR */}
           <div className="left-navigation">
-
-            {/* TIMESHEET MENU */}
-            <div className={`collapse-container mb-3 ${isOpenTimesheet ? "active" : ""}`}>
-              <button className="collapse-toggle btn fw-bold"
-                onClick={() => setIsOpenTimesheet(!isOpenTimesheet)}>
+            <div
+              className={`collapse-container mb-3 ${isOpenTimesheet ? "active" : ""
+                }`}
+            >
+              <button
+                onClick={() => setIsOpenTimesheet(!isOpenTimesheet)}
+                className="collapse-toggle btn fw-bold"
+              >
                 Timesheet Options
               </button>
-
               {isOpenTimesheet && (
-                <div className="collapse-content">
-                  <ul><Link to={"/supervisor/addtimesheet"}>Add Timesheet</Link></ul>
-                  <ul><Link to={"/supervisor/rejecttimesheet"}>View Rejected Timesheet</Link></ul>
-                  <ul><Link to={"/supervisor/approvetimesheet"}>Employee Approval</Link></ul>
+                <div className="collapse-content ">
+                  <ul>
+                    <Link to={"/supervisor/addtimesheet"}>Add Timesheet</Link>
+                  </ul>
+                  {/* <ul>
+                    <Link to={"/supervisor/edittimesheet"}>Edit Timesheet</Link>
+                  </ul> */}
+                  <ul>
+                    <Link to={"/supervisor/rejecttimesheet"}>
+                      View Rejected Timesheet
+                    </Link>
+                  </ul>
+                  <ul>
+                    <Link to={"/supervisor/approvetimesheet"}>
+                      Employee Timesheet Approval & Rejection
+                    </Link>
+                  </ul>
                 </div>
               )}
             </div>
-
-            {/* LEAVE MENU */}
-            <div className={`collapse-container mb-3 ${isOpenLeaveManagement ? "active" : ""}`}>
-              <button className="collapse-toggle btn fw-bold"
-                onClick={() => setIsOpenLeaveManagement(!isOpenLeaveManagement)}>
+            <div
+              className={`collapse-container mb-3 ${isOpenLeaveManagement ? "active" : ""
+                }`}
+            >
+              <button
+                onClick={() => setIsOpenLeaveManagement(!isOpenLeaveManagement)}
+                className="collapse-toggle btn fw-bold"
+              >
                 Leave Management
               </button>
-
               {isOpenLeaveManagement && (
-                <div className="collapse-content">
-                  <ul><Link to={"/supervisor/leaverequest"}>Add Leave Request</Link></ul>
-                  <ul><Link to={"/supervisor/viewrejectedleaverequests"}>Rejected Requests</Link></ul>
-                  <ul><Link to={"/supervisor/viewapprovedleaverequests"}>Approved Requests</Link></ul>
-                  <ul><Link to={"/supervisor/leaveapproval"}>Approve Employee Leave</Link></ul>
+                <div className="collapse-content ">
+                  <ul>
+                    <Link to={"/supervisor/leaverequest"}>
+                      Add Leave Request
+                    </Link>
+                  </ul>
+                  <ul>
+                    <Link to={"/supervisor/editleaverequest"}>
+                      Edit Leave Request
+                    </Link>
+                  </ul>
+                  <ul>
+                    <Link to={"/supervisor/viewrejectedleaverequests"}>
+                      View Rejected Leave Requests
+                    </Link>
+                  </ul>
+                  <ul>
+                    <Link to={"/supervisor/viewapprovedleaverequests"}>
+                      View Approved Leave Requests
+                    </Link>
+                  </ul>
+                  <ul>
+                    <Link to={"/supervisor/leaveapproval"}>
+                      Approve or Reject Employee Leave Requests
+                    </Link>
+                  </ul>
                 </div>
               )}
             </div>
-
             {/* HOLIDAY CALENDAR */}
             <div className="collapse-content">
               <ul>
@@ -239,10 +254,8 @@ function SupervisorHome() {
                 </button>
               </ul>
             </div>
-
           </div>
 
-          {/* RIGHT MAIN SCREEN */}
           <div className="right-details">
 
             {calendarImage ? (
@@ -265,33 +278,25 @@ function SupervisorHome() {
               </div>
 
             ) : (
-              // DEFAULT DASHBOARD VIEW
               <div className="row text-center ti-home-content mt-2">
-
-                {/* TIMESHEET CARD */}
-                <div className="col mx-5 my-2 p-2">
+                {/* timesheet status */}
+                <div className="col mx-5 my-2 p-2 ">
                   <p className="p-2 title">Your Submitted Timesheet</p>
-                  <div className="body p-2 text-start">
+                  <div className="body   p-2 text-start">
                     <div className="m-4 ti-home-ti-status p-4">
-                      <h5 className="">Timesheet Period</h5>
+                      <h5 className=""> Timesheet Period </h5>
 
                       <div className="d-flex flex-column ms-4">
-
-                        {/* Start Date */}
                         <div className="d-flex align-items-center mb-2">
-                          <p className="mb-0 me-2">Start Date:</p>
+                          <p className="mb-0 me-2">Start date :</p>
                           <p className="mb-0">{startSubmitDate}</p>
                         </div>
-
-                        {/* End Date */}
                         <div className="d-flex align-items-center mb-2">
-                          <p className="mb-0 me-2">End Date:</p>
+                          <p className="mb-0 me-2">End date :</p>
                           <p className="mb-0">{endSubmitDate}</p>
                         </div>
-
-                        {/* Status */}
                         <div className="d-flex align-items-center">
-                          <p className="mb-0 me-2">Status:</p>
+                          <p className="mb-0 me-2">STATUS :</p>
                           {statusValue && (
                             <button
                               className="view-btn p-2"
@@ -302,22 +307,18 @@ function SupervisorHome() {
                                     : statusValue === "REJECTED"
                                       ? "red"
                                       : "blue",
-                                color: "white",
-                                cursor: "default",
+                                color: "white", // Set the text color to white for better visibility
                               }}
                             >
                               {statusValue}
                             </button>
                           )}
                         </div>
-
                       </div>
                     </div>
                   </div>
                 </div>
-
-
-                {/* LEAVE CARD */}
+                {/* navigation pages */}
                 <div className="col mx-5 my-2 p-2">
                   <p className="p-2 title">Your Requested Leaves</p>
                   <div className="body p-2 text-start">
@@ -335,38 +336,37 @@ function SupervisorHome() {
                           </div>
                           <div className="d-flex align-items-center mb-2">
                             <p className="mb-0 me-2">Number of Days:</p>
-                            <p className="mb-0">{leave.noOfDays}</p> </div>
+                            <p className="mb-0">{leave.noOfDays}</p>
+                          </div>
                           <div className="d-flex align-items-center">
                             <p className="mb-0 me-2">STATUS:</p>
-                            <button className="view-btn p-2"
-                              style={{ backgroundColor: leave.status === "APPROVED" ? "green" : leave.status === "REJECTED" ? "red" : "blue", color: "white", }} >
-                              {leave.status} </button> {/* Cancel Button - Only when status is PENDING */}
-                            {leave.status === "PENDING" && (
-                              <button className="cancel-btn"
-                                style={{ backgroundColor: "red", color: "white", height: "30px", width: "120px", border: "none", borderRadius: "4px", cursor: "pointer", padding: "0 10px", fontSize: "12px", display: "flex", justifyContent: "center", alignItems: "center", }} onClick={() => handleCancelClick(leave.id)} > Cancel Request </button>
-                            )}
+                            <button
+                              className="view-btn p-2"
+                              style={{
+                                backgroundColor:
+                                  leave.status === "APPROVED"
+                                    ? "green"
+                                    : leave.status === "REJECTED"
+                                      ? "red"
+                                      : "blue",
+                                color: "white",
+                              }}
+                            >
+                              {leave.status}
+                            </button>
                           </div>
                         </div>
                       </div>
                     ))}
+
                   </div>
                 </div>
+
               </div>
             )}
           </div>
-
-
         </div>
       </div>
-
-      {/* CANCEL MODAL */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Body>Are you sure you want to cancel this leave request?</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>No</Button>
-          <Button variant="danger" onClick={confirmCancelLeave}>Yes, Cancel</Button>
-        </Modal.Footer>
-      </Modal>
     </>
   );
 }
