@@ -169,49 +169,34 @@ const [showModal, setShowModal] = useState(false);
   };
   
   // Cancel confirmation logic
-const handleConfirmCancel = async () => {
-  try {
-    const response = await fetch(`${serverUrl}/leaverequests/${selectedId}`, {
+  const handleConfirmCancel = () => {
+    fetch(`${serverUrl}/supervisor/leave-requests/${selectedId}`, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        // If token is needed add:
-        // Authorization: `Bearer ${localStorage.getItem("token")}`
-      },
-    });
+    })
+      .then((response) => {
+        if (response.ok) {
+          // alert("Leave request cancelled successfully.");
+          setLeaveRequests((prev) => prev.filter((leave) => leave.id !== selectedId));
+        } else {
+          return response.json().then((error) => {
+            alert(`Failed to cancel: ${error.message || "Unexpected error."}`);
+          });
+        }
+      })
+      .catch((err) => {
+        console.error("Cancel error:", err);
+        alert("Something went wrong while cancelling.");
+      })
+      .finally(() => {
+        setShowModal(false);
+        setSelectedId(null);
+      });
+  };
 
-    // If backend returns 204 No Content
-    if (response.status === 204) {
-      alert("Leave request cancelled successfully.");
-      setLeaveRequests((prev) => prev.filter((leave) => leave.id !== selectedId));
-      return handleModalClose();
-    }
-
-    // If backend returns success with JSON body
-    if (response.ok) {
-      const data = await response.json().catch(() => null);
-      alert(data?.message || "Leave request cancelled successfully.");
-      setLeaveRequests((prev) => prev.filter((leave) => leave.id !== selectedId));
-      return handleModalClose();
-    }
-
-    // If backend returns error with JSON body
-    const errorData = await response.text();
-    alert(`Failed to cancel: ${errorData || "Unexpected server error"}`);
-  } catch (error) {
-    console.error("Cancel error:", error);
-    alert("Something went wrong while cancelling.");
-  } finally {
+  const handleModalClose = () => {
     setShowModal(false);
     setSelectedId(null);
-  }
-};
-
-const handleModalClose = () => {
-  setShowModal(false);
-  setSelectedId(null);
-};
-
+  };
   return (
     <>
       <div className="ti-background-clr">
