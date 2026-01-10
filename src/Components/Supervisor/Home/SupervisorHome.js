@@ -31,7 +31,8 @@ function SupervisorHome() {
   const dispatch = useDispatch();
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [calendarImage, setCalendarImage] = useState(null);
-
+const [showModal, setShowModal] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
   useEffect(() => {
     async function fetchTimesheetData() {
       if (!supervisorId) {
@@ -162,6 +163,54 @@ function SupervisorHome() {
     fetchLeaveRequests();
   }, [supervisorId]);
 
+ const handleCancelClick = (id) => {
+    setSelectedId(id);
+    setShowModal(true);
+  };
+  
+  // Cancel confirmation logic
+const handleConfirmCancel = async () => {
+  try {
+    const response = await fetch(`${serverUrl}/leaverequests/${selectedId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        // If token is needed add:
+        // Authorization: `Bearer ${localStorage.getItem("token")}`
+      },
+    });
+
+    // If backend returns 204 No Content
+    if (response.status === 204) {
+      alert("Leave request cancelled successfully.");
+      setLeaveRequests((prev) => prev.filter((leave) => leave.id !== selectedId));
+      return handleModalClose();
+    }
+
+    // If backend returns success with JSON body
+    if (response.ok) {
+      const data = await response.json().catch(() => null);
+      alert(data?.message || "Leave request cancelled successfully.");
+      setLeaveRequests((prev) => prev.filter((leave) => leave.id !== selectedId));
+      return handleModalClose();
+    }
+
+    // If backend returns error with JSON body
+    const errorData = await response.text();
+    alert(`Failed to cancel: ${errorData || "Unexpected server error"}`);
+  } catch (error) {
+    console.error("Cancel error:", error);
+    alert("Something went wrong while cancelling.");
+  } finally {
+    setShowModal(false);
+    setSelectedId(null);
+  }
+};
+
+const handleModalClose = () => {
+  setShowModal(false);
+  setSelectedId(null);
+};
 
   return (
     <>
@@ -319,7 +368,7 @@ function SupervisorHome() {
                   </div>
                 </div>
                 {/* navigation pages */}
-                <div className="col mx-5 my-2 p-2">
+              <div className="col mx-5 my-2 p-2">
                   <p className="p-2 title">Your Requested Leaves</p>
                   <div className="body p-2 text-start">
                     {leaveRequests.map((leave, index) => (
@@ -338,22 +387,67 @@ function SupervisorHome() {
                             <p className="mb-0 me-2">Number of Days:</p>
                             <p className="mb-0">{leave.noOfDays}</p>
                           </div>
-                          <div className="d-flex align-items-center">
-                            <p className="mb-0 me-2">STATUS:</p>
-                            <button
-                              className="view-btn p-2"
-                              style={{
-                                backgroundColor:
-                                  leave.status === "APPROVED"
-                                    ? "green"
-                                    : leave.status === "REJECTED"
-                                      ? "red"
-                                      : "blue",
-                                color: "white",
-                              }}
-                            >
-                              {leave.status}
-                            </button>
+                          <div style={{ backgroundColor: "#d5d8f6", padding: "5px", borderRadius: "8px" }}>
+                            <div className="d-flex align-items-center mb-2">
+                              {/* STATUS Label */}
+                              <p className="mb-0 me-2" style={{ fontSize: "14px", color: "#555" }}>
+                                <strong>STATUS:</strong>
+                              </p>
+
+                              {/* Buttons in one line */}
+                              <div className="d-flex gap-3 align-items-center">
+                                {/* Status Button */}
+                                <button
+                                  className="view-btn"
+                                  style={{
+                                    backgroundColor:
+                                      leave.status === "APPROVED"
+                                        ? "green"
+                                        : leave.status === "REJECTED"
+                                          ? "red"
+                                          : "blue",
+                                    color: "white",
+                                    height: "30px",
+                                    width: "120px",
+                                    border: "none",
+                                    borderRadius: "4px",
+                                    padding: "0 10px",
+                                    fontSize: "14px",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    cursor: "default", // 👈 This makes the arrow appear on hover
+                                  }}
+                                >
+                                  {leave.status}
+                                </button>
+
+
+                                {/* Cancel Button - Only when status is PENDING */}
+                                {leave.status === "PENDING" && (
+                                  <button
+                                    className="cancel-btn"
+                                    style={{
+                                      backgroundColor: "red",
+                                      color: "white",
+                                      height: "30px",
+                                      width: "120px",
+                                      border: "none",
+                                      borderRadius: "4px",
+                                      cursor: "pointer",
+                                      padding: "0 10px",
+                                      fontSize: "12px",
+                                      display: "flex",
+                                      justifyContent: "center",
+                                      alignItems: "center",
+                                    }}
+                                    onClick={() => handleCancelClick(leave.id)}
+                                  >
+                                    Cancel Request
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -361,6 +455,32 @@ function SupervisorHome() {
 
                   </div>
                 </div>
+
+                
+                  {/* Modal for confirmation */}
+                  {showModal && (
+                    <div className="modal d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+                      <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                          <div className="modal-header">
+                            <h5 className="modal-title">Cancel Leave Request</h5>
+                            <button type="button" className="btn-close" onClick={handleModalClose}></button>
+                          </div>
+                          <div className="modal-body">
+                            <p>Are you sure you want to cancel this leave request?</p>
+                          </div>
+                          <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={handleModalClose}>
+                              Close
+                            </button>
+                            <button className="btn btn-danger" onClick={handleConfirmCancel}>
+                              Confirm Cancellation
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
               </div>
             )}
